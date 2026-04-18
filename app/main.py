@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.predictions import router as predictions_router
+from app.api.v1.promo_codes import router as promo_codes_router
 from app.api.v1.users import router as users_router
 from app.api.v1.wallet import router as wallet_router
 from app.core.config import get_settings
@@ -30,6 +31,7 @@ app = FastAPI(
 app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
 app.include_router(health_router, prefix="/api/v1", tags=["health"])
 app.include_router(predictions_router, prefix="/api/v1", tags=["predictions"])
+app.include_router(promo_codes_router, prefix="/api/v1", tags=["promo-codes"])
 app.include_router(users_router, prefix="/api/v1", tags=["users"])
 app.include_router(wallet_router, prefix="/api/v1", tags=["wallet"])
 

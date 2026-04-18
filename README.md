@@ -25,6 +25,12 @@ Services:
 - Redis: `localhost:6379`
 - Celery worker: background prediction processing
 
+To seed a demo admin and promo code locally:
+
+```bash
+.venv/bin/python scripts/seed_demo_data.py
+```
+
 ## Available endpoints
 
 - `GET /`
@@ -33,7 +39,10 @@ Services:
 - `POST /api/v1/auth/login`
 - `GET /api/v1/users/me`
 - `GET /api/v1/wallet`
+- `POST /api/v1/wallet/top-up`
 - `GET /api/v1/wallet/transactions`
+- `POST /api/v1/promo-codes`
+- `POST /api/v1/promo-codes/redeem`
 - `POST /api/v1/predictions`
 - `GET /api/v1/predictions`
 - `GET /api/v1/predictions/{id}`

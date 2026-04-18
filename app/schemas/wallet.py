@@ -21,3 +21,13 @@ class TransactionResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class WalletTopUpRequest(BaseModel):
+    amount: int
+
+
+class WalletTopUpResponse(BaseModel):
+    message: str
+    wallet_balance: int
+    credited_amount: int

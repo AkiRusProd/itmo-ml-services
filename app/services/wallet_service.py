@@ -28,3 +28,19 @@ class WalletService:
             .order_by(Transaction.created_at.desc())
         )
         return list(self.db.execute(statement).scalars().all())
+
+    def top_up_wallet(self, user: User, amount: int) -> Wallet:
+        if amount <= 0:
+            raise ValueError("Top-up amount must be positive.")
+        wallet = self.get_wallet_for_user(user)
+        wallet.balance += amount
+        transaction = Transaction(
+            wallet_id=wallet.id,
+            amount=amount,
+            transaction_type="top_up",
+            description="Mock wallet top-up.",
+        )
+        self.db.add(transaction)
+        self.db.commit()
+        self.db.refresh(wallet)
+        return wallet

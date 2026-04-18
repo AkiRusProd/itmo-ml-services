@@ -27,7 +27,15 @@ SessionLocal = sessionmaker(
 
 
 def init_db() -> None:
-    from app.models import prediction_request, prediction_result, transaction, user, wallet  # noqa: F401
+    from app.models import (  # noqa: F401
+        prediction_request,
+        prediction_result,
+        promo_code,
+        promo_code_activation,
+        transaction,
+        user,
+        wallet,
+    )
 
     Base.metadata.create_all(bind=engine)
 
