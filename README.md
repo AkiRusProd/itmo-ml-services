@@ -11,6 +11,19 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+## Run with Docker Compose
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Services:
+- API: `http://127.0.0.1:8000`
+- Swagger: `http://127.0.0.1:8000/docs`
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+
 ## Available endpoints
 
 - `GET /`
@@ -72,4 +85,11 @@ Alembic scaffold is included:
 
 ```bash
 alembic upgrade head
+```
+
+For Docker Compose the default database URL is PostgreSQL:
+
+```env
+DATABASE_URL=postgresql+psycopg://app_user:app_password@db:5432/apartment_service
+REDIS_URL=redis://redis:6379/0
 ```

@@ -12,6 +12,7 @@ class Settings:
     app_version: str
     model_path: Path
     database_url: str
+    redis_url: str
     jwt_secret_key: str
     jwt_algorithm: str
     access_token_expire_minutes: int
@@ -29,6 +30,7 @@ def get_settings() -> Settings:
             )
         ),
         database_url=os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'app.db'}"),
+        redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
         jwt_secret_key=os.getenv("JWT_SECRET_KEY", "change-me-for-production"),
         jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
         access_token_expire_minutes=int(
