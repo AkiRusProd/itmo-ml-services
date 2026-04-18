@@ -28,6 +28,7 @@ SessionLocal = sessionmaker(
 
 def init_db() -> None:
     from app.models import (  # noqa: F401
+        ml_model,
         prediction_request,
         prediction_result,
         promo_code,

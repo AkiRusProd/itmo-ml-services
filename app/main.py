@@ -5,13 +5,15 @@ from fastapi import FastAPI
 from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.metrics import router as metrics_router
+from app.api.v1.models import router as models_router
 from app.api.v1.predictions import router as predictions_router
 from app.api.v1.promo_codes import router as promo_codes_router
 from app.api.v1.users import router as users_router
 from app.api.v1.wallet import router as wallet_router
 from app.core.config import get_settings
-from app.db.session import init_db
+from app.db.session import SessionLocal, init_db
 from app.monitoring.metrics import metrics_middleware
+from app.services.ml_model_service import MLModelService
 
 
 settings = get_settings()
@@ -20,6 +22,11 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    db = SessionLocal()
+    try:
+        MLModelService(db).ensure_current_model_registered()
+    finally:
+        db.close()
     yield
 
 
@@ -35,6 +42,7 @@ app.middleware("http")(metrics_middleware)
 app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
 app.include_router(health_router, prefix="/api/v1", tags=["health"])
 app.include_router(metrics_router, prefix="/api/v1")
+app.include_router(models_router, prefix="/api/v1", tags=["models"])
 app.include_router(predictions_router, prefix="/api/v1", tags=["predictions"])
 app.include_router(promo_codes_router, prefix="/api/v1", tags=["promo-codes"])
 app.include_router(users_router, prefix="/api/v1", tags=["users"])

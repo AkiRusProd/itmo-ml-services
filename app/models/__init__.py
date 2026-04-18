@@ -1,3 +1,4 @@
+from app.models.ml_model import MLModel
 from app.models.prediction_request import PredictionRequest
 from app.models.prediction_result import PredictionResult
 from app.models.promo_code import PromoCode
@@ -12,6 +13,7 @@ __all__ = [
     "Transaction",
     "PredictionRequest",
     "PredictionResult",
+    "MLModel",
     "PromoCode",
     "PromoCodeActivation",
 ]

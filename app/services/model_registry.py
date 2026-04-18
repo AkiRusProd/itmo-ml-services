@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 import joblib
 import pandas as pd
@@ -25,8 +26,23 @@ class ModelRegistry:
         return float(prediction)
 
     def get_metadata(self) -> dict[str, str]:
+        return self.get_static_metadata(self.settings.model_path)
+
+    @staticmethod
+    def get_static_metadata(model_path: Path) -> dict:
         return {
             "target_name": "MedHouseVal",
             "model_name": "apartment_price_model",
             "model_version": "v1",
+            "features": [
+                "MedInc",
+                "HouseAge",
+                "AveRooms",
+                "AveBedrms",
+                "Population",
+                "AveOccup",
+                "Latitude",
+                "Longitude",
+            ],
+            "artifact_path": str(model_path),
         }

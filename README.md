@@ -49,6 +49,7 @@ To seed a demo admin and promo code locally:
 - `POST /api/v1/predictions`
 - `GET /api/v1/predictions`
 - `GET /api/v1/predictions/{id}`
+- `GET /api/v1/models/current`
 - `GET /api/v1/metrics`
 
 ## Example request
@@ -140,3 +141,11 @@ It shows:
 - prediction activity by day
 - credits flow by day
 - recent predictions and transactions
+
+## Model Metadata
+
+Current active model metadata is available via:
+
+- `GET /api/v1/models/current`
+
+This endpoint returns the active model name, version, artifact path, target, and expected features.
