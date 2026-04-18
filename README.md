@@ -15,6 +15,11 @@ uvicorn app.main:app --reload
 
 - `GET /`
 - `GET /api/v1/health`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/users/me`
+- `GET /api/v1/wallet`
+- `GET /api/v1/wallet/transactions`
 - `POST /api/v1/predictions`
 
 ## Example request
@@ -30,4 +35,30 @@ uvicorn app.main:app --reload
   "Latitude": 37.88,
   "Longitude": -122.23
 }
+```
+
+## Authentication flow
+
+1. Register:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "strongpass123",
+  "full_name": "Rustam User"
+}
+```
+
+2. Login and get `access_token`.
+3. Pass `Authorization: Bearer <token>` to protected endpoints.
+
+## Database and migrations
+
+By default the app uses local SQLite via `DATABASE_URL=sqlite:///./app.db`.
+You can later switch to PostgreSQL by overriding `DATABASE_URL`.
+
+Alembic scaffold is included:
+
+```bash
+alembic upgrade head
 ```
