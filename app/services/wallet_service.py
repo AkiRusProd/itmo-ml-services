@@ -25,7 +25,7 @@ class WalletService:
         statement = (
             select(Transaction)
             .where(Transaction.wallet_id == wallet.id)
-            .order_by(Transaction.created_at.desc())
+            .order_by(Transaction.created_at.desc(), Transaction.id.desc())
         )
         return list(self.db.execute(statement).scalars().all())
 

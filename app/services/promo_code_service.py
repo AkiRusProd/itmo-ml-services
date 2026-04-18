@@ -45,7 +45,10 @@ class PromoCodeService:
         if promo_code.activation_count >= promo_code.max_activations:
             raise ValueError("Promo code activation limit reached.")
         if promo_code.expires_at:
-            if promo_code.expires_at < datetime.now(timezone.utc):
+            expires_at = promo_code.expires_at
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            if expires_at < datetime.now(timezone.utc):
                 raise ValueError("Promo code has expired.")
 
         existing_activation = self.db.execute(
