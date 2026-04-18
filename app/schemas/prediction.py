@@ -1,0 +1,45 @@
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class PredictionRequest(BaseModel):
+    med_inc: float = Field(..., alias="MedInc", description="Median income in the district.")
+    house_age: float = Field(..., alias="HouseAge", description="Median house age in the district.")
+    ave_rooms: float = Field(..., alias="AveRooms", description="Average number of rooms.")
+    ave_bedrms: float = Field(..., alias="AveBedrms", description="Average number of bedrooms.")
+    population: float = Field(..., alias="Population", description="District population.")
+    ave_occup: float = Field(..., alias="AveOccup", description="Average occupants per household.")
+    latitude: float = Field(..., alias="Latitude", description="Latitude coordinate.")
+    longitude: float = Field(..., alias="Longitude", description="Longitude coordinate.")
+
+    model_config = ConfigDict(populate_by_name=True, json_schema_extra={
+        "example": {
+            "MedInc": 8.3252,
+            "HouseAge": 41.0,
+            "AveRooms": 6.9841,
+            "AveBedrms": 1.0238,
+            "Population": 322.0,
+            "AveOccup": 2.5556,
+            "Latitude": 37.88,
+            "Longitude": -122.23,
+        }
+    })
+
+    def to_model_features(self) -> dict[str, float]:
+        return {
+            "MedInc": self.med_inc,
+            "HouseAge": self.house_age,
+            "AveRooms": self.ave_rooms,
+            "AveBedrms": self.ave_bedrms,
+            "Population": self.population,
+            "AveOccup": self.ave_occup,
+            "Latitude": self.latitude,
+            "Longitude": self.longitude,
+        }
+
+
+class PredictionResponse(BaseModel):
+    prediction: float
+    target_name: str
+    model_name: str
+
+    model_config = ConfigDict(protected_namespaces=())
