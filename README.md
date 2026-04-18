@@ -21,6 +21,8 @@ uvicorn app.main:app --reload
 - `GET /api/v1/wallet`
 - `GET /api/v1/wallet/transactions`
 - `POST /api/v1/predictions`
+- `GET /api/v1/predictions`
+- `GET /api/v1/predictions/{id}`
 
 ## Example request
 
@@ -51,6 +53,15 @@ uvicorn app.main:app --reload
 
 2. Login and get `access_token`.
 3. Pass `Authorization: Bearer <token>` to protected endpoints.
+
+## Prediction flow
+
+`POST /api/v1/predictions` is now protected and persists both:
+- the incoming prediction request with status and input payload;
+- the resulting prediction value and model metadata.
+
+For the current MVP the task runs inline, but each request already stores a `task_id`.
+That gives us a clean migration path to `Celery + Redis` later without changing the API contract.
 
 ## Database and migrations
 

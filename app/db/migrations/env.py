@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
 from app.db.base import Base
-from app.models import transaction, user, wallet  # noqa: F401
+from app.models import prediction_request, prediction_result, transaction, user, wallet  # noqa: F401
 
 
 config = context.config

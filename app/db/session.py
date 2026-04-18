@@ -27,7 +27,7 @@ SessionLocal = sessionmaker(
 
 
 def init_db() -> None:
-    from app.models import transaction, user, wallet  # noqa: F401
+    from app.models import prediction_request, prediction_result, transaction, user, wallet  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
 
