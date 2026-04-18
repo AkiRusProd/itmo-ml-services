@@ -23,6 +23,7 @@ Services:
 - Swagger: `http://127.0.0.1:8000/docs`
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
+- Celery worker: background prediction processing
 
 ## Available endpoints
 
@@ -73,8 +74,16 @@ Services:
 - the incoming prediction request with status and input payload;
 - the resulting prediction value and model metadata.
 
-For the current MVP the task runs inline, but each request already stores a `task_id`.
-That gives us a clean migration path to `Celery + Redis` later without changing the API contract.
+Predictions now run through `Celery + Redis`:
+- API creates a `prediction_request` with status `queued`;
+- worker picks it up and updates it to `processing/completed/failed`;
+- client polls `GET /api/v1/predictions` or `GET /api/v1/predictions/{id}`.
+
+For local smoke tests you can force synchronous execution with:
+
+```bash
+CELERY_TASK_ALWAYS_EAGER=true uvicorn app.main:app --reload
+```
 
 ## Database and migrations
 
@@ -92,4 +101,5 @@ For Docker Compose the default database URL is PostgreSQL:
 ```env
 DATABASE_URL=postgresql+psycopg://app_user:app_password@db:5432/apartment_service
 REDIS_URL=redis://redis:6379/0
+CELERY_TASK_ALWAYS_EAGER=false
 ```
