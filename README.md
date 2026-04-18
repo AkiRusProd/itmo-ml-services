@@ -2,6 +2,23 @@
 
 Minimal backend scaffold for an ML service that predicts apartment prices.
 
+## Overview
+
+The project implements a scalable ML service for apartment price prediction with:
+- JWT authentication
+- internal credit-based billing
+- asynchronous prediction processing through `Celery + Redis`
+- PostgreSQL for persistent storage
+- monitoring via `Prometheus + Grafana`
+- user-facing analytics dashboard via `Streamlit`
+
+It follows the project brief requirements for:
+- REST API with Swagger
+- asynchronous ML execution
+- billing with transaction history
+- Docker Compose deployment
+- monitoring and dashboarding
+
 ## Run locally
 
 ```bash
@@ -52,6 +69,27 @@ To seed a demo admin and promo code locally:
 - `GET /api/v1/models/current`
 - `GET /api/v1/metrics`
 
+## Architecture
+
+Core services:
+- `api` — FastAPI application with auth, billing, prediction endpoints, and Swagger
+- `worker` — Celery worker that processes queued prediction jobs
+- `db` — PostgreSQL database
+- `redis` — broker/backend for Celery
+- `prometheus` — metrics scraping
+- `grafana` — metrics dashboards
+- `dashboard` — Streamlit analytics app
+
+Main persistence entities:
+- `users`
+- `wallets`
+- `transactions`
+- `prediction_requests`
+- `prediction_results`
+- `promo_codes`
+- `promo_code_activations`
+- `ml_models`
+
 ## Example request
 
 ```json
@@ -98,6 +136,26 @@ For local smoke tests you can force synchronous execution with:
 ```bash
 CELERY_TASK_ALWAYS_EAGER=true uvicorn app.main:app --reload
 ```
+
+## Billing Logic
+
+Billing is based on internal credits.
+
+Implemented rules:
+- each new user receives a welcome bonus;
+- wallet top-up creates a transaction record;
+- promo code activation creates a transaction record;
+- credits are charged only after successful prediction completion;
+- failed prediction must not create a charge transaction;
+- all balance changes are reproducible from the transaction history.
+
+Main transaction types:
+- `bonus`
+- `top_up`
+- `promo_code`
+- `prediction_charge`
+
+This design matches the brief requirement for transparent and auditable billing.
 
 ## Database and migrations
 
@@ -149,3 +207,60 @@ Current active model metadata is available via:
 - `GET /api/v1/models/current`
 
 This endpoint returns the active model name, version, artifact path, target, and expected features.
+
+## Tests
+
+Run unit tests:
+
+```bash
+.venv/bin/pytest tests/unit -q
+```
+
+Run the full test suite:
+
+```bash
+.venv/bin/pytest tests -q
+```
+
+Notes:
+- unit tests are green in the current environment;
+- integration tests are included, but in the current sandbox they may be skipped because local socket binding is restricted.
+
+## Manual Demo Checklist
+
+1. Start the project:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+2. Open:
+- Swagger: `http://127.0.0.1:8000/docs`
+- Grafana: `http://127.0.0.1:3000`
+- Streamlit: `http://127.0.0.1:8501`
+
+3. Run the main user scenario:
+- register a user;
+- login and get JWT token;
+- inspect wallet and transactions;
+- optionally top up the wallet;
+- redeem a promo code;
+- create a prediction request;
+- poll prediction status;
+- verify final prediction result;
+- verify credits were charged exactly once.
+
+4. Inspect observability:
+- Prometheus target scraping;
+- Grafana dashboard panels;
+- Streamlit business dashboard.
+
+## Submission Notes
+
+Before submission, it is worth confirming:
+- full `docker compose up --build` run works end-to-end;
+- Grafana dashboard loads correctly;
+- Streamlit dashboard reads from PostgreSQL;
+- `GET /api/v1/models/current` returns active model metadata;
+- business plan file is attached: [BUSINESS_PLAN.md](/home/rustam/my-projects/itmo-ml-services/BUSINESS_PLAN.md)
