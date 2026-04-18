@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.monitoring.metrics import track_wallet_topup
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.wallet import Wallet
@@ -43,4 +44,5 @@ class WalletService:
         self.db.add(transaction)
         self.db.commit()
         self.db.refresh(wallet)
+        track_wallet_topup(amount)
         return wallet

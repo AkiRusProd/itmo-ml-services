@@ -1,6 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
+from app.monitoring.metrics import (
+    set_prediction_queue_depth,
+    track_prediction_processing,
+    track_prediction_request_created,
+)
 from app.models.prediction_request import PredictionRequest
 from app.models.prediction_result import PredictionResult
 from app.models.user import User
@@ -37,6 +42,8 @@ class PredictionService:
         self.db.add(prediction_request)
         self.db.commit()
         self.db.refresh(prediction_request)
+        track_prediction_request_created("queued")
+        self._refresh_prediction_queue_depth()
 
         try:
             async_result = dispatcher.enqueue(prediction_request.id)
@@ -53,6 +60,8 @@ class PredictionService:
             prediction_request.status = "failed"
             prediction_request.error_message = str(exc)
             self.db.commit()
+            track_prediction_request_created("failed")
+            self._refresh_prediction_queue_depth()
             raise
 
         return self._to_create_response(prediction_request)
@@ -81,6 +90,7 @@ class PredictionService:
             prediction_request.task_id = task_id or prediction_request.task_id
             prediction_request.error_message = None
             self.db.flush()
+            self._refresh_prediction_queue_depth()
 
             payload = PredictionPayload(
                 **prediction_request.input_payload,
@@ -113,6 +123,8 @@ class PredictionService:
             prediction_request.status = "completed"
             self.db.commit()
             self.db.refresh(prediction_request)
+            track_prediction_processing("completed")
+            self._refresh_prediction_queue_depth()
             return self._to_detail_response(prediction_request)
         except Exception as exc:
             self.db.rollback()
@@ -123,6 +135,8 @@ class PredictionService:
             failed_request.task_id = task_id or failed_request.task_id
             failed_request.error_message = str(exc)
             self.db.commit()
+            track_prediction_processing("failed")
+            self._refresh_prediction_queue_depth()
             raise
 
     def get_prediction_detail(self, user: User, prediction_request_id: int) -> PredictionDetailResponse:
@@ -193,3 +207,11 @@ class PredictionService:
             prediction=result.prediction_value if result else None,
             model_name=result.model_name if result else None,
         )
+
+    def _refresh_prediction_queue_depth(self) -> None:
+        queued_or_processing = self.db.execute(
+            select(PredictionRequest).where(
+                PredictionRequest.status.in_(["queued", "processing"])
+            )
+        ).scalars().all()
+        set_prediction_queue_depth(len(queued_or_processing))

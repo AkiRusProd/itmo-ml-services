@@ -24,6 +24,9 @@ Services:
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
 - Celery worker: background prediction processing
+- Prometheus: `http://127.0.0.1:9090`
+- Grafana: `http://127.0.0.1:3000` (`admin` / `admin`)
+- Streamlit dashboard: `http://127.0.0.1:8501`
 
 To seed a demo admin and promo code locally:
 
@@ -46,6 +49,7 @@ To seed a demo admin and promo code locally:
 - `POST /api/v1/predictions`
 - `GET /api/v1/predictions`
 - `GET /api/v1/predictions/{id}`
+- `GET /api/v1/metrics`
 
 ## Example request
 
@@ -112,3 +116,27 @@ DATABASE_URL=postgresql+psycopg://app_user:app_password@db:5432/apartment_servic
 REDIS_URL=redis://redis:6379/0
 CELERY_TASK_ALWAYS_EAGER=false
 ```
+
+## Monitoring
+
+Prometheus scrapes the API metrics endpoint:
+
+- `GET /api/v1/metrics`
+
+Grafana is provisioned automatically with:
+- a Prometheus datasource
+- an overview dashboard for request rate, latency, prediction outcomes, queue depth, and credits
+
+## Analytics Dashboard
+
+Streamlit dashboard is available at:
+
+- `http://127.0.0.1:8501`
+
+It shows:
+- total users
+- total and successful predictions
+- credits charged, topped up, and issued via promo codes
+- prediction activity by day
+- credits flow by day
+- recent predictions and transactions

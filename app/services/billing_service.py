@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.monitoring.metrics import track_credits_charged
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.wallet import Wallet
@@ -27,4 +28,5 @@ class BillingService:
             description=f"Prediction request #{prediction_request_id}.",
         )
         self.db.add(transaction)
+        track_credits_charged(amount)
         return wallet

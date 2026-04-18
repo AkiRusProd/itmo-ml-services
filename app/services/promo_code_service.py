@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.monitoring.metrics import track_promo_code_redemption
 from app.models.promo_code import PromoCode
 from app.models.promo_code_activation import PromoCodeActivation
 from app.models.transaction import Transaction
@@ -78,4 +79,5 @@ class PromoCodeService:
         self.db.add(transaction)
         self.db.commit()
         self.db.refresh(wallet)
+        track_promo_code_redemption(promo_code.credit_amount)
         return promo_code, wallet
