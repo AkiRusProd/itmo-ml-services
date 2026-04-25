@@ -31,6 +31,7 @@ docker compose up --build
 Сервисы:
 - API: `http://127.0.0.1:8000`
 - Swagger: `http://127.0.0.1:8000/docs`
+- Frontend: `http://127.0.0.1:5173`
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
 - Celery worker: фоновая обработка предсказаний
@@ -42,6 +43,20 @@ docker compose up --build
 
 ```bash
 .venv/bin/python scripts/seed_demo_data.py
+```
+
+Если сидирование выполняется внутри Docker Compose:
+
+```bash
+docker compose exec api python scripts/seed_demo_data.py
+```
+
+Чтобы отдельно запустить frontend локально:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ## Доступные эндпоинты

@@ -15,6 +15,7 @@ services:
       MODEL_PATH: ${MODEL_PATH:-artifacts/apartment_price_model.joblib}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://app_user:app_password@db:5432/apartment_service}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       CELERY_TASK_ALWAYS_EAGER: ${CELERY_TASK_ALWAYS_EAGER:-false}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-for-production}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
@@ -39,6 +40,7 @@ services:
       MODEL_PATH: ${MODEL_PATH:-artifacts/apartment_price_model.joblib}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://app_user:app_password@db:5432/apartment_service}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       CELERY_TASK_ALWAYS_EAGER: ${CELERY_TASK_ALWAYS_EAGER:-false}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-for-production}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
@@ -121,6 +123,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: apartment-price-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
+    depends_on:
       api:
         condition: service_started
     restart: unless-stopped
