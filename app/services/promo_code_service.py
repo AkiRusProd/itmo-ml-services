@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -10,6 +10,8 @@ from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.promo_code import PromoCodeCreateRequest
 from app.services.wallet_service import WalletService
+
+DEFAULT_PROMO_CODE_TTL_DAYS = 30
 
 
 class PromoCodeService:
@@ -24,11 +26,17 @@ class PromoCodeService:
         if existing is not None:
             raise ValueError("Promo code already exists.")
 
+        expires_at = payload.expires_at
+        if expires_at is None:
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                days=DEFAULT_PROMO_CODE_TTL_DAYS
+            )
+
         promo_code = PromoCode(
             code=payload.code.upper(),
             credit_amount=payload.credit_amount,
             max_activations=payload.max_activations,
-            expires_at=payload.expires_at,
+            expires_at=expires_at,
         )
         self.db.add(promo_code)
         self.db.commit()

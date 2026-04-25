@@ -2,10 +2,17 @@ import { useState } from "react";
 
 import { createPromoCode } from "../api/promoCodes";
 
+function getDefaultExpiryValue() {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+  return expiresAt.toISOString().slice(0, 16);
+}
+
 export function AdminPromoCodesPage() {
   const [code, setCode] = useState("SPRING100");
   const [creditAmount, setCreditAmount] = useState(100);
   const [maxActivations, setMaxActivations] = useState(10);
+  const [expiresAt, setExpiresAt] = useState(getDefaultExpiryValue);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,9 +26,11 @@ export function AdminPromoCodesPage() {
         code,
         credit_amount: creditAmount,
         max_activations: maxActivations,
-        expires_at: null,
+        expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
-      setMessage(`Промокод ${response.code} создан.`);
+      setMessage(
+        `Промокод ${response.code} создан. Действует до ${new Date(response.expires_at ?? "").toLocaleString("ru-RU")}.`,
+      );
     } catch {
       setError("Не удалось создать промокод. Проверь роль admin.");
     }
@@ -54,6 +63,14 @@ export function AdminPromoCodesPage() {
             type="number"
             value={maxActivations}
             onChange={(event) => setMaxActivations(Number(event.target.value))}
+          />
+        </label>
+        <label className="field">
+          <span>Срок действия</span>
+          <input
+            type="datetime-local"
+            value={expiresAt}
+            onChange={(event) => setExpiresAt(event.target.value)}
           />
         </label>
         <button className="primary-button" type="submit">
