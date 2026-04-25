@@ -1,0 +1,87 @@
+---
+title: Apartment Price Service Database Schema
+---
+erDiagram
+    ML_MODELS {
+        int id "PK, NOT NULL"
+        string name "NOT NULL"
+        string version "NOT NULL"
+        string artifact_path "NOT NULL"
+        string target_name "NOT NULL"
+        json features_json "NOT NULL"
+        boolean is_active "NOT NULL"
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    PREDICTION_REQUESTS {
+        int id "PK, NOT NULL"
+        int user_id "FK, NOT NULL"
+        string status "NOT NULL"
+        json input_payload "NOT NULL"
+        int cost_credits "NOT NULL"
+        string task_id
+        string error_message
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    PREDICTION_RESULTS {
+        int id "PK, NOT NULL"
+        int prediction_request_id "FK, UK, NOT NULL"
+        float prediction_value "NOT NULL"
+        string target_name "NOT NULL"
+        string model_name "NOT NULL"
+        string model_version "NOT NULL"
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    PROMO_CODE_ACTIVATIONS {
+        int id "PK, NOT NULL"
+        int promo_code_id "FK, NOT NULL"
+        int user_id "FK, NOT NULL"
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    PROMO_CODES {
+        int id "PK, NOT NULL"
+        string code "UK, NOT NULL"
+        int credit_amount "NOT NULL"
+        boolean is_active "NOT NULL"
+        int max_activations "NOT NULL"
+        int activation_count "NOT NULL"
+        string expires_at
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    TRANSACTIONS {
+        int id "PK, NOT NULL"
+        int wallet_id "FK, NOT NULL"
+        int amount "NOT NULL"
+        string transaction_type "NOT NULL"
+        string description
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    USERS {
+        int id "PK, NOT NULL"
+        string email "UK, NOT NULL"
+        string full_name "NOT NULL"
+        string hashed_password "NOT NULL"
+        string role "NOT NULL"
+        boolean is_active "NOT NULL"
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+    WALLETS {
+        int id "PK, NOT NULL"
+        int user_id "FK, UK, NOT NULL"
+        int balance "NOT NULL"
+        string created_at "NOT NULL"
+        string updated_at "NOT NULL"
+    }
+
+    USERS }o--|| PREDICTION_REQUESTS : "user_id"
+    PREDICTION_REQUESTS ||--|| PREDICTION_RESULTS : "prediction_request_id"
+    PROMO_CODES }o--|| PROMO_CODE_ACTIVATIONS : "promo_code_id"
+    USERS }o--|| PROMO_CODE_ACTIVATIONS : "user_id"
+    WALLETS }o--|| TRANSACTIONS : "wallet_id"
+    USERS ||--|| WALLETS : "user_id"
