@@ -1,25 +1,18 @@
 # Apartment Price Service
 
-Minimal backend scaffold for an ML service that predicts apartment prices.
+ML-сервисс предсказания стоимости квартир.
 
-## Overview
+## Обзор
 
-The project implements a scalable ML service for apartment price prediction with:
-- JWT authentication
-- internal credit-based billing
-- asynchronous prediction processing through `Celery + Redis`
-- PostgreSQL for persistent storage
-- monitoring via `Prometheus + Grafana`
-- user-facing analytics dashboard via `Streamlit`
+Проект реализует ML-сервис для предсказания стоимости квартир со следующими возможностями:
+- JWT-аутентификация
+- внутренний биллинг на основе кредитов
+- асинхронная обработка предсказаний через `Celery + Redis`
+- PostgreSQL для постоянного хранения данных
+- мониторинг через `Prometheus + Grafana`
+- пользовательский аналитический дашборд на `Streamlit`
 
-It follows the project brief requirements for:
-- REST API with Swagger
-- asynchronous ML execution
-- billing with transaction history
-- Docker Compose deployment
-- monitoring and dashboarding
-
-## Run locally
+## Локальный запуск
 
 ```bash
 python3 -m venv .venv
@@ -28,30 +21,30 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## Run with Docker Compose
+## Запуск через Docker Compose
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Services:
+Сервисы:
 - API: `http://127.0.0.1:8000`
 - Swagger: `http://127.0.0.1:8000/docs`
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
-- Celery worker: background prediction processing
+- Celery worker: фоновая обработка предсказаний
 - Prometheus: `http://127.0.0.1:9090`
 - Grafana: `http://127.0.0.1:3000` (`admin` / `admin`)
 - Streamlit dashboard: `http://127.0.0.1:8501`
 
-To seed a demo admin and promo code locally:
+Чтобы локально создать демо-администратора и промокод:
 
 ```bash
 .venv/bin/python scripts/seed_demo_data.py
 ```
 
-## Available endpoints
+## Доступные эндпоинты
 
 - `GET /`
 - `GET /api/v1/health`
@@ -69,18 +62,18 @@ To seed a demo admin and promo code locally:
 - `GET /api/v1/models/current`
 - `GET /api/v1/metrics`
 
-## Architecture
+## Архитектура
 
-Core services:
-- `api` — FastAPI application with auth, billing, prediction endpoints, and Swagger
-- `worker` — Celery worker that processes queued prediction jobs
-- `db` — PostgreSQL database
-- `redis` — broker/backend for Celery
-- `prometheus` — metrics scraping
-- `grafana` — metrics dashboards
-- `dashboard` — Streamlit analytics app
+Основные сервисы:
+- `api` — приложение FastAPI с auth, billing, prediction-эндпоинтами и Swagger
+- `worker` — Celery worker, который обрабатывает поставленные в очередь prediction-задачи
+- `db` — база данных PostgreSQL
+- `redis` — broker/backend для Celery
+- `prometheus` — сбор метрик
+- `grafana` — дашборды метрик
+- `dashboard` — аналитическое приложение на Streamlit
 
-Main persistence entities:
+Основные сущности хранения:
 - `users`
 - `wallets`
 - `transactions`
@@ -90,7 +83,7 @@ Main persistence entities:
 - `promo_code_activations`
 - `ml_models`
 
-## Example request
+## Пример запроса
 
 ```json
 {
@@ -105,9 +98,9 @@ Main persistence entities:
 }
 ```
 
-## Authentication flow
+## Поток аутентификации
 
-1. Register:
+1. Зарегистрируйте пользователя:
 
 ```json
 {
@@ -117,58 +110,58 @@ Main persistence entities:
 }
 ```
 
-2. Login and get `access_token`.
-3. Pass `Authorization: Bearer <token>` to protected endpoints.
+2. Выполните логин и получите `access_token`.
+3. Передайте `Authorization: Bearer <token>` в защищенный эндпоинт.
 
-## Prediction flow
+## Поток предсказания
 
-`POST /api/v1/predictions` is now protected and persists both:
-- the incoming prediction request with status and input payload;
-- the resulting prediction value and model metadata.
+`POST /api/v1/predictions` сохраняет:
+- входящий запрос на предсказание со статусом и входным payload;
+- итоговое значение предсказания и метаданные модели.
 
-Predictions now run through `Celery + Redis`:
-- API creates a `prediction_request` with status `queued`;
-- worker picks it up and updates it to `processing/completed/failed`;
-- client polls `GET /api/v1/predictions` or `GET /api/v1/predictions/{id}`.
+Предсказания выполняются через `Celery + Redis`:
+- API создает `prediction_request` со статусом `queued`;
+- worker забирает задачу и обновляет статус на `processing/completed/failed`;
+- клиент опрашивает `GET /api/v1/predictions` или `GET /api/v1/predictions/{id}`.
 
-For local smoke tests you can force synchronous execution with:
+Для локальных smoke-тестов можно принудительно включить синхронное выполнение:
 
 ```bash
 CELERY_TASK_ALWAYS_EAGER=true uvicorn app.main:app --reload
 ```
 
-## Billing Logic
+## Логика биллинга
 
-Billing is based on internal credits.
+Биллинг построен на внутренних кредитах.
 
-Implemented rules:
-- each new user receives a welcome bonus;
-- wallet top-up creates a transaction record;
-- promo code activation creates a transaction record;
-- credits are charged only after successful prediction completion;
-- failed prediction must not create a charge transaction;
-- all balance changes are reproducible from the transaction history.
+Реализованные правила:
+- каждый новый пользователь получает welcome-бонус;
+- пополнение кошелька создает запись о транзакции;
+- активация промокода создает запись о транзакции;
+- кредиты списываются только после успешного завершения предсказания;
+- неуспешное предсказание не должно создавать транзакцию списания;
+- все изменения баланса можно восстановить по истории транзакций.
 
-Main transaction types:
+Основные типы транзакций:
 - `bonus`
 - `top_up`
 - `promo_code`
 - `prediction_charge`
 
-This design matches the brief requirement for transparent and auditable billing.
+Такая схема соответствует требованию брифа о прозрачном и аудируемом биллинге.
 
-## Database and migrations
+## База данных и миграции
 
-By default the app uses local SQLite via `DATABASE_URL=sqlite:///./app.db`.
-You can later switch to PostgreSQL by overriding `DATABASE_URL`.
+По умолчанию приложение использует локальную SQLite через `DATABASE_URL=sqlite:///./app.db`.
+Позже можно переключиться на PostgreSQL, переопределив `DATABASE_URL`.
 
-Alembic scaffold is included:
+В проект уже добавлен Alembic:
 
 ```bash
 alembic upgrade head
 ```
 
-For Docker Compose the default database URL is PostgreSQL:
+Для Docker Compose по умолчанию используется PostgreSQL:
 
 ```env
 DATABASE_URL=postgresql+psycopg://app_user:app_password@db:5432/apartment_service
@@ -176,91 +169,50 @@ REDIS_URL=redis://redis:6379/0
 CELERY_TASK_ALWAYS_EAGER=false
 ```
 
-## Monitoring
+## Мониторинг
 
-Prometheus scrapes the API metrics endpoint:
+Prometheus собирает метрики с API-эндпоинта:
 
 - `GET /api/v1/metrics`
 
-Grafana is provisioned automatically with:
-- a Prometheus datasource
-- an overview dashboard for request rate, latency, prediction outcomes, queue depth, and credits
+Grafana автоматически настраивается с:
+- datasource для Prometheus
+- обзорным дашбордом по request rate, latency, prediction outcomes, queue depth и кредитам
 
-## Analytics Dashboard
+## Аналитический дашборд
 
-Streamlit dashboard is available at:
+Streamlit-дашборд доступен по адресу:
 
 - `http://127.0.0.1:8501`
 
-It shows:
-- total users
-- total and successful predictions
-- credits charged, topped up, and issued via promo codes
-- prediction activity by day
-- credits flow by day
-- recent predictions and transactions
+Он показывает:
+- общее количество пользователей
+- общее количество и число успешных предсказаний
+- списанные кредиты, пополнения и начисления по промокодам
+- активность предсказаний по дням
+- поток кредитов по дням
+- последние предсказания и транзакции
 
-## Model Metadata
+## Метаданные модели
 
-Current active model metadata is available via:
+Информация о текущей активной модели доступна через:
 
 - `GET /api/v1/models/current`
 
-This endpoint returns the active model name, version, artifact path, target, and expected features.
+Эндпоинт возвращает имя активной модели, версию, путь к артефакту, target и ожидаемые признаки.
 
-## Tests
+## Тесты
 
-Run unit tests:
+Запуск unit-тестов:
 
 ```bash
 .venv/bin/pytest tests/unit -q
 ```
 
-Run the full test suite:
+Запуск полного набора тестов:
 
 ```bash
 .venv/bin/pytest tests -q
 ```
 
-Notes:
-- unit tests are green in the current environment;
-- integration tests are included, but in the current sandbox they may be skipped because local socket binding is restricted.
-
-## Manual Demo Checklist
-
-1. Start the project:
-
-```bash
-cp .env.example .env
-docker compose up --build
-```
-
-2. Open:
-- Swagger: `http://127.0.0.1:8000/docs`
-- Grafana: `http://127.0.0.1:3000`
-- Streamlit: `http://127.0.0.1:8501`
-
-3. Run the main user scenario:
-- register a user;
-- login and get JWT token;
-- inspect wallet and transactions;
-- optionally top up the wallet;
-- redeem a promo code;
-- create a prediction request;
-- poll prediction status;
-- verify final prediction result;
-- verify credits were charged exactly once.
-
-4. Inspect observability:
-- Prometheus target scraping;
-- Grafana dashboard panels;
-- Streamlit business dashboard.
-
-## Submission Notes
-
-Before submission, it is worth confirming:
-- full `docker compose up --build` run works end-to-end;
-- Grafana dashboard loads correctly;
-- Streamlit dashboard reads from PostgreSQL;
-- `GET /api/v1/models/current` returns active model metadata;
-- business plan file is attached: [BUSINESS_PLAN.md](/home/rustam/my-projects/itmo-ml-services/BUSINESS_PLAN.md)
+Вместе с проектом приложен [BUSINESS_PLAN.md](BUSINESS_PLAN.md).
