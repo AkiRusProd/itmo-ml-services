@@ -98,7 +98,7 @@ docker compose up --build
 }
 ```
 
-## Поток аутентификации
+## Аутентификация
 
 1. Зарегистрируйте пользователя:
 
@@ -113,7 +113,7 @@ docker compose up --build
 2. Выполните логин и получите `access_token`.
 3. Передайте `Authorization: Bearer <token>` в защищенный эндпоинт.
 
-## Поток предсказания
+## Предсказания
 
 `POST /api/v1/predictions` сохраняет:
 - входящий запрос на предсказание со статусом и входным payload;
@@ -155,7 +155,7 @@ CELERY_TASK_ALWAYS_EAGER=true uvicorn app.main:app --reload
 По умолчанию приложение использует локальную SQLite через `DATABASE_URL=sqlite:///./app.db`.
 Позже можно переключиться на PostgreSQL, переопределив `DATABASE_URL`.
 
-В проект уже добавлен Alembic:
+В проект добавлен Alembic:
 
 ```bash
 alembic upgrade head
