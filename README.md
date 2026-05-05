@@ -231,3 +231,72 @@ Streamlit-дашборд доступен по адресу:
 ```
 
 Вместе с проектом приложен [BUSINESS_PLAN.md](BUSINESS_PLAN.md).
+
+## Отчет
+
+### Поднятие контейнеров
+
+![Поднятие контейнеров](report/docker_compose_up.png)
+
+### Swagger UI
+
+![Swagger UI](report/swagger_page.png)
+
+### Несколько примеров взаимодействия с API
+
+#### Получение JWT токена
+
+![Получение JWT токена](report/get_token.png)
+
+#### Создание предсказания
+
+![Создание предсказания](report/create_prediction.png)
+
+#### Получение предсказания
+
+![Получение предсказания](report/get_prediction.png)
+
+### Grafana дэшборд
+
+![Grafana дэшборд](report/grafana.png)
+
+### Streamlit дэшборд
+
+![Streamlit дэшборд](report/streamlit.png)
+
+### Фронтенд
+
+#### Главная страница
+
+![Главная страница фронтенда](report/frontend_main_page.png)
+
+#### Сводка
+
+![Сводка фронтенда](report/frontend_summary.png)
+
+#### Создание предсказания
+
+![Создание предсказания во фронтенде](report/frontend_create_prediction.png)
+
+#### История предсказаний
+
+![История предсказаний во фронтенде](report/frontend_history.png)
+
+#### Кошелек
+
+![Кошелек во фронтенде](report/frontend_wallet.png)
+
+#### Создание промокода администратором
+
+![Создание промокода администратором](report/frontend_create_promo.png)
+
+
+#### Активация промокода
+
+![Активация промокода во фронтенде](report/frontend_reedem_promo.png)
+
+### Схема БД
+
+![Схема БД](report/db.png)
+
+####
