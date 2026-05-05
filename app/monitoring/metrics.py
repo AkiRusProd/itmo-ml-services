@@ -5,7 +5,11 @@ from typing import Callable
 
 from fastapi import Request, Response
 from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 from starlette.responses import Response as StarletteResponse
+
+from app.models.transaction import Transaction
 
 
 HTTP_REQUESTS_TOTAL = Counter(
@@ -33,27 +37,27 @@ PREDICTION_PROCESSING_TOTAL = Counter(
     ["status"],
 )
 
-CREDITS_CHARGED_TOTAL = Counter(
+CREDITS_CHARGED_TOTAL = Gauge(
     "credits_charged_total",
     "Total number of credits charged for successful predictions.",
 )
 
-WALLET_TOPUPS_TOTAL = Counter(
+WALLET_TOPUPS_TOTAL = Gauge(
     "wallet_topups_total",
     "Total number of mock wallet top-ups.",
 )
 
-WALLET_TOPUP_CREDITS_TOTAL = Counter(
+WALLET_TOPUP_CREDITS_TOTAL = Gauge(
     "wallet_topup_credits_total",
     "Total number of credits added via wallet top-up.",
 )
 
-PROMO_CODE_REDEMPTIONS_TOTAL = Counter(
+PROMO_CODE_REDEMPTIONS_TOTAL = Gauge(
     "promo_code_redemptions_total",
     "Total number of successful promo code redemptions.",
 )
 
-PROMO_CODE_CREDITS_TOTAL = Counter(
+PROMO_CODE_CREDITS_TOTAL = Gauge(
     "promo_code_credits_total",
     "Total number of credits issued through promo codes.",
 )
@@ -85,6 +89,40 @@ async def metrics_middleware(
 
 def metrics_response() -> StarletteResponse:
     return StarletteResponse(generate_latest(), media_type="text/plain; version=0.0.4")
+
+
+def sync_business_metrics_from_db(db: Session) -> None:
+    charged_total = db.execute(
+        select(func.coalesce(-func.sum(Transaction.amount), 0)).where(
+            Transaction.transaction_type == "prediction_charge"
+        )
+    ).scalar_one()
+    topups_total = db.execute(
+        select(func.coalesce(func.count(Transaction.id), 0)).where(
+            Transaction.transaction_type == "top_up"
+        )
+    ).scalar_one()
+    topup_credits_total = db.execute(
+        select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+            Transaction.transaction_type == "top_up"
+        )
+    ).scalar_one()
+    promo_redemptions_total = db.execute(
+        select(func.coalesce(func.count(Transaction.id), 0)).where(
+            Transaction.transaction_type == "promo_code"
+        )
+    ).scalar_one()
+    promo_credits_total = db.execute(
+        select(func.coalesce(func.sum(Transaction.amount), 0)).where(
+            Transaction.transaction_type == "promo_code"
+        )
+    ).scalar_one()
+
+    CREDITS_CHARGED_TOTAL.set(float(charged_total))
+    WALLET_TOPUPS_TOTAL.set(float(topups_total))
+    WALLET_TOPUP_CREDITS_TOTAL.set(float(topup_credits_total))
+    PROMO_CODE_REDEMPTIONS_TOTAL.set(float(promo_redemptions_total))
+    PROMO_CODE_CREDITS_TOTAL.set(float(promo_credits_total))
 
 
 def track_prediction_request_created(status: str) -> None:
