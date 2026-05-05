@@ -9,7 +9,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from starlette.responses import Response as StarletteResponse
 
+from app.models.prediction_request import PredictionRequest
 from app.models.transaction import Transaction
+from app.models.user import User
+from app.models.wallet import Wallet
 
 
 HTTP_REQUESTS_TOTAL = Counter(
@@ -25,13 +28,13 @@ HTTP_REQUEST_DURATION_SECONDS = Histogram(
     buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0),
 )
 
-PREDICTION_REQUESTS_TOTAL = Counter(
+PREDICTION_REQUESTS_TOTAL = Gauge(
     "prediction_requests_total",
     "Number of prediction requests created by users.",
     ["status"],
 )
 
-PREDICTION_PROCESSING_TOTAL = Counter(
+PREDICTION_PROCESSING_TOTAL = Gauge(
     "prediction_processing_total",
     "Number of prediction processing attempts by final status.",
     ["status"],
@@ -60,6 +63,16 @@ PROMO_CODE_REDEMPTIONS_TOTAL = Gauge(
 PROMO_CODE_CREDITS_TOTAL = Gauge(
     "promo_code_credits_total",
     "Total number of credits issued through promo codes.",
+)
+
+TOTAL_CREDITS_BALANCE = Gauge(
+    "total_credits_balance",
+    "Total credits currently stored in all user wallets.",
+)
+
+USERS_COUNT = Gauge(
+    "users_count",
+    "Total number of registered users.",
 )
 
 PREDICTION_QUEUE_DEPTH = Gauge(
@@ -92,6 +105,28 @@ def metrics_response() -> StarletteResponse:
 
 
 def sync_business_metrics_from_db(db: Session) -> None:
+    prediction_status_counts = dict(
+        db.execute(
+            select(
+                PredictionRequest.status,
+                func.count(PredictionRequest.id),
+            ).group_by(PredictionRequest.status)
+        ).all()
+    )
+    for status in ("queued", "processing", "completed", "failed"):
+        PREDICTION_REQUESTS_TOTAL.labels(status=status).set(
+            float(prediction_status_counts.get(status, 0))
+        )
+        PREDICTION_PROCESSING_TOTAL.labels(status=status).set(
+            float(prediction_status_counts.get(status, 0))
+        )
+
+    queue_depth = (
+        prediction_status_counts.get("queued", 0)
+        + prediction_status_counts.get("processing", 0)
+    )
+    PREDICTION_QUEUE_DEPTH.set(float(queue_depth))
+
     charged_total = db.execute(
         select(func.coalesce(-func.sum(Transaction.amount), 0)).where(
             Transaction.transaction_type == "prediction_charge"
@@ -117,12 +152,20 @@ def sync_business_metrics_from_db(db: Session) -> None:
             Transaction.transaction_type == "promo_code"
         )
     ).scalar_one()
+    total_credits_balance = db.execute(
+        select(func.coalesce(func.sum(Wallet.balance), 0))
+    ).scalar_one()
+    users_count = db.execute(
+        select(func.coalesce(func.count(User.id), 0))
+    ).scalar_one()
 
     CREDITS_CHARGED_TOTAL.set(float(charged_total))
     WALLET_TOPUPS_TOTAL.set(float(topups_total))
     WALLET_TOPUP_CREDITS_TOTAL.set(float(topup_credits_total))
     PROMO_CODE_REDEMPTIONS_TOTAL.set(float(promo_redemptions_total))
     PROMO_CODE_CREDITS_TOTAL.set(float(promo_credits_total))
+    TOTAL_CREDITS_BALANCE.set(float(total_credits_balance))
+    USERS_COUNT.set(float(users_count))
 
 
 def track_prediction_request_created(status: str) -> None:

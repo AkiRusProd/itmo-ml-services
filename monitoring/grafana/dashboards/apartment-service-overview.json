@@ -87,8 +87,58 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 6,
         "x": 0,
+        "y": 8
+      },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "users_count",
+          "refId": "A"
+        }
+      ],
+      "title": "Users Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "total_credits_balance",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Credits Balance",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
         "y": 8
       },
       "id": 3,
@@ -112,33 +162,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 8
-      },
-      "id": 4,
-      "targets": [
-        {
-          "expr": "prediction_queue_depth",
-          "refId": "A"
-        }
-      ],
-      "title": "Prediction Queue Depth",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
+        "w": 6,
+        "x": 18,
         "y": 8
       },
       "id": 5,
@@ -149,6 +174,82 @@
         }
       ],
       "title": "Credits Charged Total",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 14,
+        "y": 16
+      },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "prediction_processing_total{status=\"completed\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Completed Predictions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 16
+      },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "prediction_processing_total{status=\"failed\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Predictions",
       "type": "stat"
     },
     {
@@ -194,9 +295,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
+        "w": 24,
+        "x": 0,
+        "y": 24
       },
       "id": 7,
       "options": {
